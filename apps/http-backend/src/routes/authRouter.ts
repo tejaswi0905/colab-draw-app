@@ -1,11 +1,11 @@
-import express from "express";
+import express, { Router } from "express";
 
-const authRouter = express.Router();
+const authRouter: Router = express.Router();
 
 authRouter.get("/signIn", (req, res) => {
   res.send("inside the /singIn endpoing");
 });
-authRouter.get("./signUp", (req, res) => {
+authRouter.get("/signUp", (req, res) => {
   res.send("inside the /signUp endpoing");
 });
 
