@@ -1,24 +1,35 @@
-import express, { Router } from "express";
+import express, { Router, Request, Response } from "express";
+
+import { googleLogin, googleCallBack } from "../controller/authController.js";
+
+import { clearTokenCookie } from "../utils/jwt.js";
 
 const authRouter: Router = express.Router();
 
-authRouter.get("/signIn", (req, res) => {
-  res.send("inside the /singIn endpoing");
-});
-authRouter.get("/signUp", (req, res) => {
-  res.send("inside the /signUp endpoing");
+// 🔹 Sign In (for now just placeholder)
+authRouter.get("/signIn", (req: Request, res: Response) => {
+  res.send("Use /auth/google to sign in with Google");
 });
 
-authRouter.get("/google", (req, res) => {
-  res.send("Inside the /google oauth endpoing");
+// 🔹 Sign Up (we’ll implement later)
+authRouter.get("/signUp", (req: Request, res: Response) => {
+  res.send("Sign up will be implemented soon");
 });
 
-authRouter.get("/google/callback", (req, res) => {
-  res.send("Inside the /google/callback endpoint");
-});
+// 🔹 Google OAuth start
+authRouter.get("/google", googleLogin);
 
-authRouter.get("/logout", (req, res) => {
-  res.send("Inside the /logout endpoing");
+// 🔹 Google OAuth callback
+authRouter.get("/google/callback", googleCallBack);
+
+// 🔹 Logout
+authRouter.get("/logout", (req: Request, res: Response) => {
+  clearTokenCookie(res);
+
+  res.json({
+    success: true,
+    message: "Logged out successfully",
+  });
 });
 
 export default authRouter;
