@@ -2,7 +2,6 @@ import { axiosObj } from "@repo/common/fetch";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 
-// 🔹 helper to safely get env
 const getGoogleEnv = () => {
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } =
     process.env;
@@ -18,7 +17,6 @@ const getGoogleEnv = () => {
   };
 };
 
-// ✅ 1. Auth URL
 export const getGoogleAuthURL = () => {
   const env = getGoogleEnv();
 
@@ -44,7 +42,6 @@ export const getGoogleAuthURL = () => {
   };
 };
 
-// ✅ 2. Get Tokens
 export const getGoogleAuthTokens = async (code: string) => {
   const env = getGoogleEnv();
 
@@ -82,7 +79,6 @@ export const getGoogleAuthTokens = async (code: string) => {
   }
 };
 
-// ✅ 3. Get User Info
 export const getGoogleUserInfo = async (access_token: string) => {
   try {
     const response = await axiosObj.get(

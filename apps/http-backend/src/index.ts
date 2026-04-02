@@ -1,4 +1,4 @@
-import authRouter from "./routes/authRouter";
+import authRouter from "./routes/authRouter.js";
 
 import express from "express";
 import * as dotenv from "dotenv";
@@ -13,6 +13,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRouter);
-app.listen(3001, () => {
+app.listen(3000, () => {
   console.log("The server is litening in port 3000");
 });

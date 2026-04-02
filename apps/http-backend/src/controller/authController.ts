@@ -1,4 +1,4 @@
-import { prismaClient } from "@repo/db/client";
+import { prismaClient } from "@repo/db";
 import { Request, Response } from "express";
 
 import {
