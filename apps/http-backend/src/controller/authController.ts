@@ -1,15 +1,17 @@
 import { prismaClient } from "@repo/db";
 import { Request, Response } from "express";
 
+import bcrypt from "bcrypt";
+
 import {
   getGoogleAuthURL,
   getGoogleAuthTokens,
   getGoogleUserInfo,
 } from "../utils/oauth.js";
-
+import { loginSchema, signupSchema } from "@repo/common/types";
+import { TokenPayload } from "../utils/jwt.js";
 import { signToken, sendTokenCookie } from "../utils/jwt.js";
 
-// 🔹 Login → redirect
 export const googleLogin = (req: Request, res: Response): void => {
   const result = getGoogleAuthURL();
 
@@ -21,7 +23,6 @@ export const googleLogin = (req: Request, res: Response): void => {
   res.redirect(result.url!);
 };
 
-// 🔹 Callback
 export const googleCallBack = async (
   req: Request,
   res: Response,
@@ -90,6 +91,7 @@ export const googleCallBack = async (
     const myToken = signToken({
       userId: user.id,
       email: user.email,
+      name: user.name!,
     });
 
     sendTokenCookie(res, myToken);
@@ -101,6 +103,114 @@ export const googleCallBack = async (
 
     res.status(400).json({
       error: "Something went wrong in authController",
+    });
+  }
+};
+
+export const singInController = async (req: Request, res: Response) => {
+  const result = signupSchema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({
+      error: "Invalid input",
+      issues: result.error.issues,
+    });
+    return;
+  }
+  const { email, password, name } = result.data;
+
+  try {
+    const existingUser = await prismaClient.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (existingUser) {
+      res.status(400).json({
+        status: "failed",
+        message: "Email already in use",
+      });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await prismaClient.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        provider: "Credentials",
+      },
+    });
+
+    const payload: TokenPayload = {
+      userId: newUser.id,
+      email: newUser.email,
+      name: newUser.name!,
+    };
+    const token = signToken(payload);
+    sendTokenCookie(res, token);
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      error: "Something went wrong during signup",
+    });
+  }
+};
+
+export const loginController = async (req: Request, res: Response) => {
+  const result = loginSchema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid Credentials",
+    });
+    return;
+  }
+  const { email, password } = result.data;
+
+  try {
+    const user = await prismaClient.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user || !user.password) {
+      res.status(400).json({
+        status: "failed",
+        message: "Invalid email or password",
+      });
+      return;
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      res.status(400).json({
+        status: "failed",
+        message: "Invalid email or password",
+      });
+      return;
+    }
+    const payload: TokenPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name!,
+    };
+    const token = signToken(payload);
+    sendTokenCookie(res, token);
+    res.json({
+      success: true,
+      message: "Logged in successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      error: "Something went wrong during login",
     });
   }
 };

@@ -1,11 +1,12 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Response } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret";
+import { JWT_SECRET } from "@repo/backend-common/config";
 
-type TokenPayload = {
+export type TokenPayload = {
   userId: string;
-  email?: string;
+  email: string;
+  name: string;
 };
 
 export const signToken = (payload: TokenPayload): string => {
