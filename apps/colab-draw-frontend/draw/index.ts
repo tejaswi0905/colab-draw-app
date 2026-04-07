@@ -1,78 +1,121 @@
-import { CgTapSingle } from "react-icons/cg";
+import { HTTP_BACKEND } from "@/config";
+import { axiosObj } from "@repo/common/fetch";
 
 type Shape =
-  | {
-      type: "rect";
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-    }
-  | {
-      type: "circle";
-      centerX: number;
-      centerY: number;
-      radius: number;
-    };
+  | { type: "rect"; x: number; y: number; width: number; height: number }
+  | { type: "circle"; centerX: number; centerY: number; radius: number };
 
-export function initDraw(canvas: HTMLCanvasElement) {
+export async function initDraw(
+  canvas: HTMLCanvasElement,
+  roomId: string,
+  socket: WebSocket,
+) {
   const ctx = canvas.getContext("2d");
 
+  // const existingShapes: Shape[] = await getExistingShapes(roomId);
   const existingShapes: Shape[] = [];
-
-  if (!ctx) {
-    return;
-  }
-  ctx.fillStyle = "rgba(0,0,0)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
   let clicked = false;
   let startX = 0;
   let startY = 0;
 
-  canvas.addEventListener("mousedown", (e) => {
+  if (!ctx) return;
+  socket.onmessage = (event) => {
+    const parsedData = JSON.parse(event.data);
+    if (parsedData.type === "chat") {
+      const parsedShape = JSON.parse(parsedData.message);
+      existingShapes.push(parsedShape);
+      clearCanvas(existingShapes, canvas, ctx);
+    }
+  };
+
+  clearCanvas(existingShapes, canvas, ctx);
+
+  const handleMouseDown = (e: MouseEvent) => {
     clicked = true;
-    startX = e.clientX;
-    startY = e.clientY;
-  });
-  canvas.addEventListener("mouseup", (e) => {
+    startX = e.offsetX; // Local canvas coordinates
+    startY = e.offsetY;
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!clicked) return;
+
+    const currentX = e.offsetX;
+    const currentY = e.offsetY;
+    const width = currentX - startX;
+    const height = currentY - startY;
+
+    clearCanvas(existingShapes, canvas, ctx);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(startX, startY, width, height);
+  };
+
+  const handleMouseUp = (e: MouseEvent) => {
+    if (!clicked) return;
     clicked = false;
-    // console.log(e.clientX);
-    // console.log(e.clientY);
-    const width = e.clientX - startX;
-    const height = e.clientY - startY;
-    existingShapes.push({
+
+    // To get correct offset on the window-level event,
+    // we calculate relative to the canvas bounding box
+    const rect = canvas.getBoundingClientRect();
+    const endX = e.clientX - rect.left;
+    const endY = e.clientY - rect.top;
+
+    const shape: Shape = {
       type: "rect",
       x: startX,
       y: startY,
-      height,
-      width,
-    });
-  });
-  canvas.addEventListener("mousemove", (e) => {
-    if (clicked) {
-      const width = e.clientX - startX;
-      const height = e.clientY - startY;
-      clearCanvas(existingShapes, canvas, ctx);
-      ctx.strokeStyle = "rgba(255, 255, 255)";
-      ctx.strokeRect(startX, startY, width, height);
+      width: endX - startX,
+      height: endY - startY,
+    };
+
+    existingShapes.push(shape);
+    socket.send(
+      JSON.stringify({
+        shape,
+      }),
+    );
+
+    clearCanvas(existingShapes, canvas, ctx);
+  };
+
+  // Attach listeners
+  canvas.addEventListener("mousedown", handleMouseDown);
+  canvas.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("mouseup", handleMouseUp); // Window prevents "sticky" mouse
+
+  // // Return a cleanup function to be used by React
+  // return () => {
+  //   canvas.removeEventListener("mousedown", handleMouseDown);
+  //   canvas.removeEventListener("mousemove", handleMouseMove);
+  //   window.removeEventListener("mouseup", handleMouseUp);
+  // };
+}
+
+function clearCanvas(
+  shapes: Shape[],
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+) {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  shapes.forEach((shape) => {
+    if (shape.type === "rect") {
+      ctx.strokeStyle = "white";
+      ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
     }
   });
 }
 
-function clearCanvas(
-  existingShapes: Shape[],
-  canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "rgba(0,0,0)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+async function getExistingShapes(roomId: string) {
+  const resp = await axiosObj.get(`${HTTP_BACKEND}/chats/${roomId}`);
+  const data = resp.data;
+  const messages = data.messages;
 
-  existingShapes.map((shape) => {
-    if (shape.type === "rect") {
-      ctx.strokeStyle = "rgba(255, 255, 255)";
-      ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
-    }
+  const shapes = messages.map((x: { message: string }) => {
+    const messageData = JSON.parse(x.message);
+    return messageData;
   });
+
+  return shapes;
 }
