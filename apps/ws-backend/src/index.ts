@@ -45,6 +45,7 @@ const verifyUser = (
 };
 
 wss.on("connection", (socket, req) => {
+  console.log("New user connected ");
   try {
     const cookies = cookie.parse(req.headers.cookie || "");
     const token = cookies.jwt;

@@ -71,7 +71,10 @@ export async function initDraw(
     existingShapes.push(shape);
     socket.send(
       JSON.stringify({
-        shape,
+        type: "chat",
+        message: JSON.stringify({
+          shape,
+        }),
       }),
     );
 

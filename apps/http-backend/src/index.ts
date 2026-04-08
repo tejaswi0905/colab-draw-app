@@ -1,4 +1,5 @@
 import authRouter from "./routes/authRouter.js";
+import chatRouter from "./routes/chatRouter.js";
 
 import express from "express";
 import * as dotenv from "dotenv";
@@ -13,6 +14,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRouter);
+app.use("/chat", chatRouter);
 app.listen(3000, () => {
   console.log("The server is litening in port 3000");
 });
