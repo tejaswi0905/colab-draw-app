@@ -1,15 +1,18 @@
 "use client";
+
 import { initDraw } from "@/draw";
 import { useEffect, useRef, useState } from "react";
-import { WS_URL } from "@/config";
+import { WS_URL, HTTP_BACKEND } from "@/config";
+import { axiosObj } from "@repo/common/fetch";
 
 export default function CanvasComp({ roomId }: { roomId: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
+  // 🔌 WebSocket connection
   useEffect(() => {
     const ws = new WebSocket(WS_URL);
+
     ws.onopen = () => {
       setSocket(ws);
       ws.send(
@@ -19,23 +22,46 @@ export default function CanvasComp({ roomId }: { roomId: string }) {
         }),
       );
     };
-  }, []);
 
+    return () => {
+      ws.close();
+    };
+  }, [roomId]);
+
+  // 🎨 Setup drawing
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas && socket) {
-      // initDraw now returns a cleanup function
-      initDraw(canvas, roomId, socket);
+    if (!canvas || !socket) return;
 
-      // React calls this when the component unmounts
-      // return () => {
-      //   if (cleanup) cleanup();
-      // };
-    }
-  }, [socket]); // Empty dependency array ensures this runs once on mount
+    let cleanupFn: (() => void) | undefined;
+
+    const setup = async () => {
+      try {
+        const resp = await axiosObj.get(
+          `${HTTP_BACKEND}/room/${roomId}/messages`,
+        );
+
+        const messages = resp.data.data;
+
+        const shapes = messages.map((x: { message: string }) =>
+          JSON.parse(x.message),
+        );
+
+        cleanupFn = initDraw(canvas, roomId, socket, shapes);
+      } catch (err) {
+        console.error("Failed to fetch shapes:", err);
+      }
+    };
+
+    setup();
+
+    return () => {
+      cleanupFn?.();
+    };
+  }, [socket, roomId]);
 
   if (!socket) {
-    return <div>Connecting to server!</div>;
+    return <div>Connecting to server...</div>;
   }
 
   return (

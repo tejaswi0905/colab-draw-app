@@ -7,7 +7,7 @@ export default async function Canvas({
     roomId: string;
   };
 }) {
-  const roomId = (await params).roomId;
+  const roomId = params.roomId;
   console.log(roomId);
 
   return <CanvasComp roomId={roomId}></CanvasComp>;

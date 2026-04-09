@@ -1,38 +1,39 @@
-import { HTTP_BACKEND } from "@/config";
-import { axiosObj } from "@repo/common/fetch";
-
 type Shape =
   | { type: "rect"; x: number; y: number; width: number; height: number }
   | { type: "circle"; centerX: number; centerY: number; radius: number };
 
-export async function initDraw(
+export function initDraw(
   canvas: HTMLCanvasElement,
   roomId: string,
   socket: WebSocket,
+  existingShapes: Shape[],
 ) {
   const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-  // const existingShapes: Shape[] = await getExistingShapes(roomId);
-  const existingShapes: Shape[] = [];
   let clicked = false;
   let startX = 0;
   let startY = 0;
 
-  if (!ctx) return;
-  socket.onmessage = (event) => {
+  // 🔌 WebSocket listener
+  const handleMessage = (event: MessageEvent) => {
     const parsedData = JSON.parse(event.data);
+
     if (parsedData.type === "chat") {
-      const parsedShape = JSON.parse(parsedData.message);
+      const parsedShape: Shape = JSON.parse(parsedData.message);
       existingShapes.push(parsedShape);
       clearCanvas(existingShapes, canvas, ctx);
     }
   };
 
+  socket.addEventListener("message", handleMessage);
+
   clearCanvas(existingShapes, canvas, ctx);
 
+  // 🖱️ Mouse handlers
   const handleMouseDown = (e: MouseEvent) => {
     clicked = true;
-    startX = e.offsetX; // Local canvas coordinates
+    startX = e.offsetX;
     startY = e.offsetY;
   };
 
@@ -41,21 +42,18 @@ export async function initDraw(
 
     const currentX = e.offsetX;
     const currentY = e.offsetY;
-    const width = currentX - startX;
-    const height = currentY - startY;
 
     clearCanvas(existingShapes, canvas, ctx);
+
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
-    ctx.strokeRect(startX, startY, width, height);
+    ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
   };
 
   const handleMouseUp = (e: MouseEvent) => {
     if (!clicked) return;
     clicked = false;
 
-    // To get correct offset on the window-level event,
-    // we calculate relative to the canvas bounding box
     const rect = canvas.getBoundingClientRect();
     const endX = e.clientX - rect.left;
     const endY = e.clientY - rect.top;
@@ -69,31 +67,33 @@ export async function initDraw(
     };
 
     existingShapes.push(shape);
+
     socket.send(
       JSON.stringify({
         type: "chat",
-        message: JSON.stringify({
-          shape,
-        }),
+        roomId,
+        message: JSON.stringify(shape),
       }),
     );
 
     clearCanvas(existingShapes, canvas, ctx);
   };
 
-  // Attach listeners
+  // 🎯 Attach listeners
   canvas.addEventListener("mousedown", handleMouseDown);
   canvas.addEventListener("mousemove", handleMouseMove);
-  window.addEventListener("mouseup", handleMouseUp); // Window prevents "sticky" mouse
+  window.addEventListener("mouseup", handleMouseUp);
 
-  // // Return a cleanup function to be used by React
-  // return () => {
-  //   canvas.removeEventListener("mousedown", handleMouseDown);
-  //   canvas.removeEventListener("mousemove", handleMouseMove);
-  //   window.removeEventListener("mouseup", handleMouseUp);
-  // };
+  // 🧹 Cleanup
+  return () => {
+    canvas.removeEventListener("mousedown", handleMouseDown);
+    canvas.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+    socket.removeEventListener("message", handleMessage);
+  };
 }
 
+// 🎨 Render all shapes
 function clearCanvas(
   shapes: Shape[],
   canvas: HTMLCanvasElement,
@@ -105,20 +105,8 @@ function clearCanvas(
   shapes.forEach((shape) => {
     if (shape.type === "rect") {
       ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
       ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
     }
   });
-}
-
-async function getExistingShapes(roomId: string) {
-  const resp = await axiosObj.get(`${HTTP_BACKEND}/chats/${roomId}`);
-  const data = resp.data;
-  const messages = data.messages;
-
-  const shapes = messages.map((x: { message: string }) => {
-    const messageData = JSON.parse(x.message);
-    return messageData;
-  });
-
-  return shapes;
 }
