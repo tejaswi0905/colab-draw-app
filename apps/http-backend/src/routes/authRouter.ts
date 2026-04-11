@@ -50,6 +50,7 @@ authRouter.get("/me", (req: Request, res: Response) => {
     return res.json({
       message: "success",
       user: decoded.data,
+      token: token,
     });
   } catch (e: any) {
     console.log("Error in /auth/me:", e);

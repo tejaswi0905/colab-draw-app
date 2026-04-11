@@ -20,6 +20,7 @@ import {
 export default function NewCanvas({ roomId }: { roomId: string }) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [authToken, setAuthToken] = useState("");
   
   const { shapes, tool, camera, setTool, setCamera, setInitialShapes, addShape, deleteShape, undo } = useDrawStore();
   
@@ -31,6 +32,9 @@ export default function NewCanvas({ roomId }: { roomId: string }) {
   useEffect(() => {
     const fetchShapes = async () => {
       try {
+        const authResp = await axiosObj.get(`${HTTP_BACKEND}/auth/me`, { withCredentials: true });
+        if (authResp.data?.token) setAuthToken(authResp.data.token);
+
         const resp = await axiosObj.get(`${HTTP_BACKEND}/room/${roomId}/messages`, {
           withCredentials: true,
         });
@@ -85,9 +89,9 @@ export default function NewCanvas({ roomId }: { roomId: string }) {
 
   // 2. Connect WS AFTER shapes loaded
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !authToken) return;
 
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(`${WS_URL}?token=${authToken}`);
 
     ws.onopen = () => {
       ws.send(JSON.stringify({ type: "join_room", roomId }));

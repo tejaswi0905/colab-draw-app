@@ -3,6 +3,7 @@ import { JWT_SECRET } from "@repo/backend-common/config";
 import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
 import * as cookie from "cookie";
+import { parse } from "url";
 import { prismaClient } from "@repo/db";
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
@@ -45,7 +46,9 @@ wss.on("connection", (socket, req) => {
   console.log("New user connected ");
   try {
     const cookies = cookie.parse(req.headers.cookie || "");
-    const token = cookies.jwt;
+    const { query } = parse(req.url || "", true);
+    
+    const token = cookies.jwt || (query.token as string);
 
     if (!token) {
       socket.close();
