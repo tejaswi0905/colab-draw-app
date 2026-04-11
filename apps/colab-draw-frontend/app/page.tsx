@@ -13,7 +13,6 @@ import { Footer } from "./components/Footer";
 
 function App() {
   const { user, loading } = useSession();
-  s;
   const [rooms, setRooms] = useState<any[]>([]);
 
   if (loading) return null;
