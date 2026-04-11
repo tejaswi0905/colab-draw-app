@@ -1,4 +1,5 @@
 "use client";
+import { HTTP_BACKEND } from "@/config";
 
 import { Pencil, Mail, Lock, User } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
@@ -24,7 +25,7 @@ export default function SignUp() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:3000/auth/signUp", {
+      const res = await fetch(`${HTTP_BACKEND}/auth/signUp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +56,7 @@ export default function SignUp() {
   };
 
   const handleGoogleSignIn = () => {
-    window.location.href = "http://localhost:3000/auth/google";
+    window.location.href = `${HTTP_BACKEND}/auth/google`;
   };
 
   return (

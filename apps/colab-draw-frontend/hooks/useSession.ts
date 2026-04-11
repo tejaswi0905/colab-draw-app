@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { HTTP_BACKEND } from "@/config";
 
 export function useSession() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:3000/auth/me", {
+    fetch(`${HTTP_BACKEND}/auth/me`, {
       credentials: "include",
     })
       .then((res) => res.json())
