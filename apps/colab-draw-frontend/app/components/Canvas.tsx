@@ -7,38 +7,19 @@ import { axiosObj } from "@repo/common/fetch";
 
 export default function CanvasComp({ roomId }: { roomId: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [initialShapes, setInitialShapes] = useState<any[] | null>(null);
 
-  // 🔌 WebSocket connection
+  // 🔥 STEP 1: Fetch shapes FIRST
   useEffect(() => {
-    const ws = new WebSocket(WS_URL);
-
-    ws.onopen = () => {
-      setSocket(ws);
-      ws.send(
-        JSON.stringify({
-          type: "join_room",
-          roomId,
-        }),
-      );
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [roomId]);
-
-  // 🎨 Setup drawing
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !socket) return;
-
-    let cleanupFn: (() => void) | undefined;
-
-    const setup = async () => {
+    const fetchShapes = async () => {
       try {
         const resp = await axiosObj.get(
           `${HTTP_BACKEND}/room/${roomId}/messages`,
+          {
+            withCredentials: true,
+          },
         );
 
         const messages = resp.data.data;
@@ -47,18 +28,54 @@ export default function CanvasComp({ roomId }: { roomId: string }) {
           JSON.parse(x.message),
         );
 
-        cleanupFn = initDraw(canvas, roomId, socket, shapes);
+        setInitialShapes(shapes);
       } catch (err) {
         console.error("Failed to fetch shapes:", err);
+        setInitialShapes([]); // fallback
       }
     };
 
-    setup();
+    fetchShapes();
+  }, [roomId]);
+
+  // 🔥 STEP 2: Connect WS AFTER shapes loaded
+  useEffect(() => {
+    if (!initialShapes) return;
+
+    const ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      ws.send(
+        JSON.stringify({
+          type: "join_room",
+          roomId,
+        }),
+      );
+      setSocket(ws);
+    };
 
     return () => {
-      cleanupFn?.();
+      ws.close();
     };
-  }, [socket, roomId]);
+  }, [initialShapes, roomId]);
+
+  // 🔥 STEP 3: Init drawing AFTER both ready
+  useEffect(() => {
+    const canvas = canvasRef.current;
+
+    if (!canvas || !socket || !initialShapes) return;
+
+    const cleanup = initDraw(canvas, roomId, socket, initialShapes);
+
+    return () => {
+      cleanup?.();
+    };
+  }, [socket, initialShapes, roomId]);
+
+  // 🔥 Loading UI
+  if (!initialShapes) {
+    return <div>Loading canvas...</div>;
+  }
 
   if (!socket) {
     return <div>Connecting to server...</div>;

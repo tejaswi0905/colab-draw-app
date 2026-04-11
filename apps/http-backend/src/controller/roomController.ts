@@ -153,3 +153,36 @@ export const getRoomBySlug = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getMyRooms = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        status: "failed",
+        message: "Unauthorized",
+      });
+    }
+
+    const rooms = await prismaClient.room.findMany({
+      where: {
+        adminId: userId, // ✅ only rooms created by user
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: rooms,
+    });
+  } catch (e) {
+    console.error("Error in getMyRooms:", e);
+    return res.status(500).json({
+      status: "failed",
+      message: "Something went wrong",
+    });
+  }
+};

@@ -2,8 +2,9 @@
 
 import { Zap, Grid3x3 } from "lucide-react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "@/hooks/useSession";
+import { useRouter } from "next/navigation";
 
 import Navbar from "./components/Navbar";
 import CreateRoom from "./components/CreateRoom";
@@ -14,6 +15,32 @@ import { Footer } from "./components/Footer";
 function App() {
   const { user, loading } = useSession();
   const [rooms, setRooms] = useState<any[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchRooms = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/room/my-rooms", {
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error(data.message);
+          return;
+        }
+
+        setRooms(data.data);
+      } catch (err) {
+        console.error("Failed to fetch rooms", err);
+      }
+    };
+
+    fetchRooms();
+  }, [user]);
 
   if (loading) return null;
 
@@ -27,7 +54,7 @@ function App() {
           <div className='text-center max-w-4xl mx-auto'>
             <div className='inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full mb-6'>
               <Zap className='w-4 h-4' />
-              Collaborative whiteboarding made simple
+              Collaborative whiteboarding made simple and easy
             </div>
 
             <h1 className='text-4xl font-bold text-slate-900 mb-6'>
@@ -59,8 +86,10 @@ function App() {
                 <div
                   key={room.id}
                   className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg hover:-translate-y-1 transition'
+                  onClick={() => router.push(`/canvas/${room.id}`)}
                 >
-                  {room.slug}
+                  <div className='font-semibold'>{room.slug}</div>
+                  <p className='text-sm text-slate-500'>Click to join</p>
                 </div>
               ))}
             </div>

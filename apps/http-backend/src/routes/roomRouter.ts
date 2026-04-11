@@ -4,6 +4,7 @@ import {
   getRoomMessages,
   createRoom,
   getRoomBySlug,
+  getMyRooms,
 } from "../controller/roomController.js";
 
 export const roomRouter: Router = express.Router();
@@ -19,5 +20,7 @@ roomRouter.post("/create", protect, createRoom);
 roomRouter.get("/:roomId/messages", protect, getRoomMessages);
 
 roomRouter.get("/slug/:slug", protect, getRoomBySlug);
+
+roomRouter.get("/my-rooms", protect, getMyRooms);
 
 export default roomRouter;
