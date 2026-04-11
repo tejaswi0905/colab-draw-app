@@ -30,6 +30,7 @@ app.use("/auth", authRouter);
 app.use("/chat", chatRouter);
 app.use("/room", roomRouter);
 
-app.listen(3000, () => {
-  console.log("The server is litening in port 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`The server is listening on port ${PORT}`);
 });

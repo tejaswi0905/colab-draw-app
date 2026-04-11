@@ -5,7 +5,8 @@ import jwt from "jsonwebtoken";
 import * as cookie from "cookie";
 import { prismaClient } from "@repo/db";
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
+const wss = new WebSocketServer({ port: PORT });
 
 type TokenPayload = {
   userId: string;
