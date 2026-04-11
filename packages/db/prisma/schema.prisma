@@ -19,7 +19,7 @@ model User {
   password             String?   @db.Text() 
 
   provider             String?   @default("LOCAL")
-  googeId              String?   @unique
+  googleId              String?   @unique
   emailVerified        DateTime?
 
   image                String?

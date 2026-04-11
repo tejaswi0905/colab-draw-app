@@ -11,11 +11,10 @@ import { clearTokenCookie, verifyToken } from "../utils/jwt.js";
 
 const authRouter: Router = express.Router();
 
-authRouter.get("/signUp", singInController);
-authRouter.get("/login", loginController);
+authRouter.post("/signUp", singInController);
+authRouter.post("/login", loginController);
 
 authRouter.get("/google", googleLogin);
-
 authRouter.get("/google/callback", googleCallBack);
 
 authRouter.get("/logout", (req: Request, res: Response) => {
@@ -27,31 +26,35 @@ authRouter.get("/logout", (req: Request, res: Response) => {
   });
 });
 
+// ✅ FIXED: safe cookie handling
 authRouter.get("/me", (req: Request, res: Response) => {
   try {
-    const token = req.cookies.jwt;
+    const token = req.cookies?.jwt; // ✅ SAFE ACCESS
+
     if (!token) {
-      res.json({
+      return res.json({
         message: "failed",
         user: null,
       });
-      return;
     }
+
     const decoded = verifyToken(token);
+
     if (decoded.success === false) {
-      res.json({
+      return res.json({
         message: "failed",
         user: null,
       });
-      return;
     }
-    res.json({
+
+    return res.json({
       message: "success",
       user: decoded.data,
     });
   } catch (e: any) {
-    console.log("Something went wrong in /auth/me route ", e);
-    res.json({
+    console.log("Error in /auth/me:", e);
+
+    return res.json({
       message: "failed",
       user: null,
     });

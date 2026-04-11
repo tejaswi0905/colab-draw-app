@@ -1,11 +1,23 @@
-import express, { Router, Request, Response } from "express";
+import express, { Router } from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { getRoomMessages } from "../controller/roomController.js";
+import {
+  getRoomMessages,
+  createRoom,
+  getRoomBySlug,
+} from "../controller/roomController.js";
 
 export const roomRouter: Router = express.Router();
 
-roomRouter.get("/", protect, (req: Request, res: Response) => {
-  res.send("You are currently inside the home page of room");
+roomRouter.get("/", (req, res) => {
+  res.send("Hello from the room route");
 });
 
-roomRouter.get("/room/:roomId/messages", protect, getRoomMessages);
+// ✅ CREATE ROOM
+roomRouter.post("/create", protect, createRoom);
+
+// GET MESSAGES
+roomRouter.get("/:roomId/messages", protect, getRoomMessages);
+
+roomRouter.get("/slug/:slug", protect, getRoomBySlug);
+
+export default roomRouter;

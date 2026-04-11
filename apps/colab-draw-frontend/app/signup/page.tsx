@@ -1,21 +1,22 @@
 "use client";
 
-import { Pencil, Mail, Lock } from "lucide-react";
+import { Pencil, Mail, Lock, User } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SignIn() {
+export default function SignUp() {
   const router = useRouter();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async (e: any) => {
+  const handleSignUp = async (e: any) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!name || !email || !password) {
       alert("Please fill all fields");
       return;
     }
@@ -23,13 +24,14 @@ export default function SignIn() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:3000/auth/login", {
+      const res = await fetch("http://localhost:3000/auth/signUp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // 🔥 required for cookies
+        credentials: "include",
         body: JSON.stringify({
+          name,
           email,
           password,
         }),
@@ -38,11 +40,11 @@ export default function SignIn() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Login failed");
+        alert(data.message || "Signup failed");
         return;
       }
 
-      // ✅ Navigate inside apps
+      // ✅ auto login + redirect
       router.push("/");
     } catch (err) {
       console.error(err);
@@ -53,7 +55,6 @@ export default function SignIn() {
   };
 
   const handleGoogleSignIn = () => {
-    // 🔥 must go to backend directly (OAuth)
     window.location.href = "http://localhost:3000/auth/google";
   };
 
@@ -70,14 +71,32 @@ export default function SignIn() {
 
           <div className='mb-8'>
             <h2 className='text-2xl sm:text-3xl font-bold text-slate-900 mb-2'>
-              Welcome back
+              Create account
             </h2>
             <p className='text-slate-600 text-sm sm:text-base'>
-              Sign in to your account to continue drawing
+              Sign up to start collaborating
             </p>
           </div>
 
-          <form onSubmit={handleSignIn} className='space-y-5'>
+          <form onSubmit={handleSignUp} className='space-y-5'>
+            {/* NAME */}
+            <div>
+              <label className='block text-sm font-semibold text-slate-700 mb-2'>
+                Name
+              </label>
+              <div className='relative'>
+                <User className='absolute left-3 top-3.5 w-5 h-5 text-slate-400' />
+                <input
+                  type='text'
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder='Your name'
+                  className='w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-slate-50'
+                />
+              </div>
+            </div>
+
+            {/* EMAIL */}
             <div>
               <label className='block text-sm font-semibold text-slate-700 mb-2'>
                 Email
@@ -94,6 +113,7 @@ export default function SignIn() {
               </div>
             </div>
 
+            {/* PASSWORD */}
             <div>
               <label className='block text-sm font-semibold text-slate-700 mb-2'>
                 Password
@@ -113,34 +133,34 @@ export default function SignIn() {
             <button
               type='submit'
               disabled={loading}
-              className='w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg disabled:opacity-50'
+              className='w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg disabled:opacity-50 cursor-pointer'
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Signing up..." : "Sign Up"}
             </button>
           </form>
 
           <div className='mt-6 pt-6 border-t border-slate-200'>
             <p className='text-center text-sm text-slate-600 mb-4'>
-              New to colab-draw?{" "}
+              Already have an account?{" "}
               <span
-                onClick={() => router.push("/signup")}
+                onClick={() => router.push("/signin")}
                 className='font-semibold text-blue-600 hover:text-blue-700 cursor-pointer'
               >
-                Sign Up
+                Sign In
               </span>
             </p>
           </div>
 
           <button
             onClick={handleGoogleSignIn}
-            className='w-full py-3 border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center gap-3'
+            className='w-full py-3 border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center gap-3 cursor-pointer'
           >
             <FcGoogle className='w-5 h-5' />
             Continue with Google
           </button>
 
           <p className='text-xs text-slate-500 text-center mt-6'>
-            By signing in, you agree to our Terms of Service and Privacy Policy
+            By signing up, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
       </div>

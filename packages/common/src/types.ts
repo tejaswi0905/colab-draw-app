@@ -17,7 +17,6 @@ export type LoginInput = z.infer<typeof loginSchema>;
 
 export const roomSchema = z.object({
   slug: z.string().min(3).max(50),
-  userId: z.string(),
 });
 
 export type RoomSchema = z.infer<typeof roomSchema>;
