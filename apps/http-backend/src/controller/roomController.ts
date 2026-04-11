@@ -100,7 +100,6 @@ export const getRoomMessages = async (req: Request, res: Response) => {
       orderBy: {
         id: "asc", // important for correct order
       },
-      take: 50,
     });
 
     return res.status(200).json({

@@ -39,10 +39,12 @@ export const verifyToken = (
 };
 
 export const sendTokenCookie = (res: Response, token: string): void => {
+  const isProduction = process.env.NODE_ENV === "production";
+  
   res.cookie("jwt", token, {
     httpOnly: true,
-    secure: false, // change to true in production
-    sameSite: "lax",
+    secure: isProduction, // Must be true in production for cross-site cookies
+    sameSite: isProduction ? "none" : "lax", // 'none' required for cross-domain
     maxAge: 1000 * 60 * 60 * 24 * 10,
   });
 };

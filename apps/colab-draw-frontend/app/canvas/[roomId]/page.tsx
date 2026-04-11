@@ -33,11 +33,16 @@
 // }
 "use client";
 
-import CanvasComp from "@/app/components/Canvas";
+import dynamic from "next/dynamic";
 import { useSession } from "@/hooks/useSession";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { use } from "react"; // 🔥 IMPORTANT
+
+const NewCanvas = dynamic(() => import("@/app/components/NewCanvas"), {
+  ssr: false,
+  loading: () => <div>Loading Canvas Editor...</div>
+});
 
 export default function CanvasPage({
   params,
@@ -56,8 +61,8 @@ export default function CanvasPage({
     }
   }, [user, loading, router]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="text-white p-4">Loading...</div>;
   if (!user) return null;
 
-  return <CanvasComp roomId={roomId} />;
+  return <NewCanvas roomId={roomId} />;
 }

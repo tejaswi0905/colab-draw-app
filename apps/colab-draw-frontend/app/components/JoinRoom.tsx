@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { HTTP_BACKEND } from "@/config";
 
 export default function JoinRoom() {
   const [slug, setSlug] = useState("");
@@ -16,7 +17,7 @@ export default function JoinRoom() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/room/slug/${trimmed}`, {
+      const res = await fetch(`${HTTP_BACKEND}/room/slug/${trimmed}`, {
         credentials: "include",
       });
 
@@ -36,17 +37,18 @@ export default function JoinRoom() {
   };
 
   return (
-    <div className='mt-6 flex justify-center'>
-      <div className='bg-white p-4 rounded-lg shadow-md'>
+    <div className='w-full'>
+      <h3 className="text-sm font-semibold text-zinc-400 mb-3 uppercase tracking-wider ml-1">Join Existing</h3>
+      <div className='flex items-center bg-zinc-900/80 border border-white/10 p-1.5 rounded-2xl backdrop-blur-md shadow-xl transition-all focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20'>
         <input
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
-          placeholder='Enter room slug'
-          className='border p-2 rounded mr-2'
+          placeholder='Enter workspace code'
+          className='flex-1 bg-transparent border-none text-white px-4 py-2.5 outline-none placeholder:text-zinc-600 w-full'
         />
         <button
           onClick={handleJoin}
-          className='bg-green-600 text-white px-4 py-2 rounded cursor-pointer'
+          className='bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-medium cursor-pointer transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:shadow-[0_0_25px_rgba(79,70,229,0.6)] whitespace-nowrap'
         >
           Join
         </button>

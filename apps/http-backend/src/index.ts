@@ -9,7 +9,8 @@ import cookieParser from "cookie-parser";
 
 dotenv.config();
 
-const allowedOrigins = ["http://localhost:4000"];
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4000";
+const allowedOrigins = [frontendUrl, "http://localhost:4000"];
 
 const app = express();
 app.use(express.json());
