@@ -201,13 +201,11 @@ export const googleCallBack = async (
     sendTokenCookie(res, myToken);
 
     // ✅ FIXED: redirect to frontend
-    res.redirect("http://localhost:4000/");
-  } catch (e) {
-    console.error(e);
-
-    res.status(500).json({
-      error: "Something went wrong in authController",
-    });
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4000";
+    res.redirect(`${frontendUrl}/`);
+  } catch (err) {
+    console.error("Google Auth Error:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
