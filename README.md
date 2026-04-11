@@ -1,159 +1,89 @@
-# Turborepo starter
+# 🎨 Colab-Draw
 
-This Turborepo starter is maintained by the Turborepo core team.
+A high-performance, real-time collaborative drawing application built for the modern web. 
 
-## Using this example
+Colab-Draw allows multiple users to simultaneously join "Rooms" and draw together on an infinite digital canvas. The project solves complex concurrency and state-synchronization problems using a custom Event-Sourcing WebSocket architecture, ensuring that every user sees identical shapes and updates instantly at 60 FPS.
 
-Run the following command:
+## ✨ Features
+- **Real-Time Collaboration:** Powered by native WebSockets, broadcasting granular add/delete events to all clients instantly.
+- **Infinite Canvas Workspace:** Engineered using `react-konva` for a camera-based coordinate system allowing endless panning, zooming, and drawing.
+- **Event-Sourced Syncing:** Uses an append-only event log architecture meaning no data is lost and state interpolation is flawless.
+- **O(1) State Lookups:** Managed via Zustand using normalized Hash Maps, stripping away the performance bottlenecks of traditional array looping during massive multi-user drawing sessions.
+- **Premium Aesthetics:** Features a sleek dark-mode, glassmorphic UI built natively in Next.js.
+- **Google OAuth:** Secure cryptographic token authentication natively bridging cross-domain backend services.
 
-```sh
-npx create-turbo@latest
+## 🏗️ Architecture Stack
+This application is architected as a highly scalable **Turborepo Monorepo**, segmenting the infrastructure into distinctly containerizable services:
+
+- **Frontend:** Next.js, React-Konva, Zustand, TailwindCSS
+- **HTTP Backend:** Node.js, Express, Google OAuth, JWT Authentication
+- **WebSocket Backend:** Node.js, `ws` library for persistent bi-directional data flow
+- **Database:** PostgreSQL (hosted on Neon), Prisma ORM
+
+---
+
+## 🚀 Running Locally
+
+Want to test the app on your own machine? Follow these exact steps to spin up the entire distributed system.
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v22 or higher)
+- [pnpm](https://pnpm.io/) (v9+)
+- A [PostgreSQL](https://neon.tech) Database
+- A [Google Cloud Console](https://console.cloud.google.com/) Project (for OAuth)
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/tejaswi0905/colab-draw-app.git
+cd colab-draw-app
 ```
 
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+### 2. Install Dependencies
+Because this is a Turborepo, running `pnpm install` in the root directory will elegantly install the dependencies for all apps and packages simultaneously.
+```bash
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 3. Environment Variables
+You need to create three `.env` files across the monorepo to tell the backends how to securely communicate. 
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+Create a `.env` file inside `packages/db/`:
+```env
+DATABASE_URL="postgresql://your-postgres-string"
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+Create a `.env` file inside `apps/http-backend/`:
+```env
+DATABASE_URL="postgresql://your-postgres-string"
+JWT_SECRET="your-super-secret-key"
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_REDIRECT_URI="http://localhost:3000/auth/google/callback"
+FRONTEND_URL="http://localhost:4000"
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+Create a `.env` file inside `apps/ws-backend/`:
+```env
+DATABASE_URL="postgresql://your-postgres-string"
+JWT_SECRET="your-super-secret-key" # MUST match the http-backend secret!
 ```
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+### 4. Database Initialization
+Push the Prisma Schema to your database to generate the exact tabular structures required:
+```bash
+cd packages/db
+npx prisma generate
+npx prisma db push
+cd ../../
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+### 5. Start the Engines!
+With a single Turbo command, you can ignite the frontend, the HTTP server, and the Websocket server concurrently:
+```bash
+pnpm run dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+The application will successfully boot, and your frontend will be beautifully listening at: **`http://localhost:4000`**
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+---
+*If you are a recruiter looking at this repository, feel free to inspect `docs/ARCHITECTURE_GUIDE.md` for a master-class deep dive into the specific mathematical algorithms and architectural decisions used to power the real-time drawing engine.*
