@@ -118,7 +118,7 @@ export default function NewCanvas({ roomId }: { roomId: string }) {
     return () => {
       ws.close();
     };
-  }, [isLoaded, roomId, addShape, deleteShape]);
+  }, [isLoaded, authToken, roomId, addShape, deleteShape]);
 
   // --- Handlers ---
   const getPointerPos = (e: any) => {
