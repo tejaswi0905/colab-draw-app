@@ -4,6 +4,14 @@ A high-performance, real-time collaborative drawing application built for the mo
 
 Colab-Draw allows multiple users to simultaneously join "Rooms" and draw together on an infinite digital canvas. The project solves complex concurrency and state-synchronization problems using a custom Event-Sourcing WebSocket architecture, ensuring that every user sees identical shapes and updates instantly at 60 FPS.
 
+## 📖 About This Project
+
+Colab-Draw was conceptualized to bridge the gap between simple HTML5 canvas plugins and enterprise-grade whiteboard solutions like Miro or Excalidraw. 
+
+Building a truly real-time canvas introduces incredibly difficult computer science challenges, primarily **State Synchronization** and **Rendering Bottlenecks**. 
+
+Instead of traditional rendering methods where the entire canvas redrawing drops frames on every mouse move, Colab-Draw utilizes a React-Konva reconciliation layer fueled by a normalized O(1) Hash Map. Because of this, it can gracefully render thousands of vector shapes simultaneously without lagging. Furthermore, instead of simply saving the "final image", this application inherently respects the journey: utilizing an Event-Sourced append-only logging system over permanent WebSockets allows new users to elegantly "replay" the history of a room drawing stroke-by-stroke the exact moment they join.
+
 ## ✨ Features
 - **Real-Time Collaboration:** Powered by native WebSockets, broadcasting granular add/delete events to all clients instantly.
 - **Infinite Canvas Workspace:** Engineered using `react-konva` for a camera-based coordinate system allowing endless panning, zooming, and drawing.
@@ -84,6 +92,21 @@ pnpm run dev
 ```
 
 The application will successfully boot, and your frontend will be beautifully listening at: **`http://localhost:4000`**
+
+---
+
+## 🤝 Contributing
+
+This project is fully open source and actively welcomes contributions from the community! Whether it's adding new vector tools, improving the WebSocket latency, or refining the UI, your PRs are highly appreciated.
+
+### How to Contribute:
+1. **Fork the repository** to your own GitHub account.
+2. **Create a new branch** for your feature or bug fix (`git checkout -b feature/amazing-new-tool`).
+3. **Commit your changes** with highly descriptive messages (`git commit -m 'Added complex bezier curve tool'`).
+4. **Push the branch** back to your fork (`git push origin feature/amazing-new-tool`).
+5. **Open a Pull Request** against the `main` branch of this repository.
+
+Please ensure that you run `pnpm run lint` and `pnpm run check-types` across the Turborepo before submitting a PR to keep the codebase universally type-safe!
 
 ---
 *If you are a recruiter looking at this repository, feel free to inspect `docs/ARCHITECTURE_GUIDE.md` for a master-class deep dive into the specific mathematical algorithms and architectural decisions used to power the real-time drawing engine.*
