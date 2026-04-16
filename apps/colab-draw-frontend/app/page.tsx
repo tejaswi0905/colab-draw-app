@@ -36,8 +36,6 @@ function App() {
     fetchRooms();
   }, [user]);
 
-  if (loading) return null;
-
   return (
     <div className='min-h-screen bg-zinc-950 text-zinc-200 flex flex-col relative overflow-hidden font-sans selection:bg-blue-500/30'>
       
@@ -47,7 +45,7 @@ function App() {
         <div className="absolute top-1/2 left-1/4 w-[400px] h-[300px] bg-purple-600 rounded-full blur-[100px] mix-blend-screen" />
       </div>
 
-      <Navbar user={user} />
+      <Navbar user={user} loading={loading} />
 
       <main className='flex-1 relative z-10'>
         <section className='max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-20 flex flex-col items-center justify-center min-h-[70vh]'>
@@ -66,7 +64,11 @@ function App() {
               </span>
             </h1>
 
-            {!user ? (
+            {loading ? (
+              <div className='flex flex-col items-center justify-center gap-6 mt-10'>
+                <div className='w-8 h-8 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin' />
+              </div>
+            ) : !user ? (
               <p className='text-xl text-zinc-400 max-w-2xl mx-auto font-light'>
                 A smooth, infinite canvas for you and your team. 
                 Sign in to start visualizing your next big idea.

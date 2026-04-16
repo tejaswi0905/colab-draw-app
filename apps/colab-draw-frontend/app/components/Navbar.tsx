@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HTTP_BACKEND } from "@/config";
 
-export default function Navbar({ user }: { user: any }) {
+export default function Navbar({ user, loading }: { user: any, loading?: boolean }) {
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -26,7 +26,9 @@ export default function Navbar({ user }: { user: any }) {
           <span className='text-xl font-bold tracking-tight text-white'>colab-draw</span>
         </div>
 
-        {!user ? (
+        {loading ? (
+          <div className="w-20 h-10 bg-white/5 animate-pulse rounded-full" />
+        ) : !user ? (
           <button
             onClick={() => router.push("/signin")}
             className='px-5 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-colors cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.4)]'

@@ -61,7 +61,12 @@ export default function CanvasPage({
     }
   }, [user, loading, router]);
 
-  if (loading) return <div className="text-white p-4">Loading...</div>;
+  if (loading) return (
+    <div className="flex-1 flex flex-col items-center justify-center bg-zinc-950 min-h-screen">
+      <div className="w-8 h-8 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin" />
+      <span className="mt-4 text-zinc-400 font-medium">Loading Canvas...</span>
+    </div>
+  );
   if (!user) return null;
 
   return <NewCanvas roomId={roomId} />;
