@@ -242,7 +242,14 @@ export default function NewCanvas({ roomId }: { roomId: string }) {
     }
   };
 
-  if (!isLoaded || !socket) return <div className="flex h-screen items-center justify-center text-white">Loading...</div>;
+  if (!isLoaded || !socket) return (
+    <div className="flex h-screen items-center justify-center bg-zinc-950 text-white w-full">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-8 h-8 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin" />
+        <span className="text-zinc-400 font-medium">Connecting to Workspace...</span>
+      </div>
+    </div>
+  );
 
   const shapesArray = Object.values(shapes);
 
