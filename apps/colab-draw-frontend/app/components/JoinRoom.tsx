@@ -17,7 +17,14 @@ export default function JoinRoom() {
     }
 
     try {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${HTTP_BACKEND}/room/slug/${trimmed}`, {
+        headers,
         credentials: "include",
       });
 

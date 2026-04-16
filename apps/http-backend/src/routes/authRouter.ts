@@ -29,7 +29,11 @@ authRouter.get("/logout", (req: Request, res: Response) => {
 // ✅ FIXED: safe cookie handling
 authRouter.get("/me", (req: Request, res: Response) => {
   try {
-    const token = req.cookies?.jwt; // ✅ SAFE ACCESS
+    let token = req.cookies?.jwt; // ✅ SAFE ACCESS
+    
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
       return res.json({

@@ -21,7 +21,16 @@ function App() {
 
     const fetchRooms = async () => {
       try {
+        const token = localStorage.getItem("token");
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${HTTP_BACKEND}/room/my-rooms`, {
+          headers,
           credentials: "include",
         });
 

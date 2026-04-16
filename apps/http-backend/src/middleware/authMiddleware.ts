@@ -4,7 +4,11 @@ import { verifyToken } from "../utils/jwt.js";
 
 export const protect = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = req.cookies.jwt;
+    let token = req.cookies.jwt;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+    
     if (!token) {
       return res.status(401).json({
         message: "Not authenticated (no token)",

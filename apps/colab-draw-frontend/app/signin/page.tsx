@@ -43,6 +43,10 @@ export default function SignIn() {
         return;
       }
 
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
       // ✅ Navigate inside apps
       router.push("/");
     } catch (err) {

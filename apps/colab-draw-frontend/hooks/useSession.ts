@@ -8,7 +8,22 @@ export function useSession() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if token is in URL (Google Auth Callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get("token");
+    if (tokenFromUrl) {
+      localStorage.setItem("token", tokenFromUrl);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    const token = localStorage.getItem("token");
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     fetch(`${HTTP_BACKEND}/auth/me`, {
+      headers,
       credentials: "include",
     })
       .then((res) => res.json())

@@ -202,7 +202,7 @@ export const googleCallBack = async (
 
     // ✅ FIXED: redirect to frontend
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4000";
-    res.redirect(`${frontendUrl}/`);
+    res.redirect(`${frontendUrl}/?token=${myToken}`);
   } catch (err) {
     console.error("Google Auth Error:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -256,6 +256,7 @@ export const singInController = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: "User created successfully",
+      token,
     });
   } catch (err) {
     console.error(err);
@@ -308,6 +309,7 @@ export const loginController = async (req: Request, res: Response) => {
     res.json({
       success: true,
       message: "Logged in successfully",
+      token,
     });
   } catch (err) {
     console.log(err);

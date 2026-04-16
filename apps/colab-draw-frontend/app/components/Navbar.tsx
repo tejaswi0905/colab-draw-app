@@ -10,9 +10,17 @@ export default function Navbar({ user, loading }: { user: any, loading?: boolean
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     await fetch(`${HTTP_BACKEND}/auth/logout`, {
+      headers,
       credentials: "include",
     });
+    localStorage.removeItem("token");
     window.location.reload();
   };
 

@@ -45,6 +45,10 @@ export default function SignUp() {
         return;
       }
 
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
       // ✅ auto login + redirect
       router.push("/");
     } catch (err) {

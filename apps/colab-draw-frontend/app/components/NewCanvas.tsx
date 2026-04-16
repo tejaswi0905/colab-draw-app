@@ -32,10 +32,23 @@ export default function NewCanvas({ roomId }: { roomId: string }) {
   useEffect(() => {
     const fetchShapes = async () => {
       try {
-        const authResp = await axiosObj.get(`${HTTP_BACKEND}/auth/me`, { withCredentials: true });
-        if (authResp.data?.token) setAuthToken(authResp.data.token);
+        const token = localStorage.getItem("token");
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const authResp = await axiosObj.get(`${HTTP_BACKEND}/auth/me`, { 
+          headers,
+          withCredentials: true 
+        });
+        if (authResp.data?.token) {
+          setAuthToken(authResp.data.token);
+          if (!token) localStorage.setItem("token", authResp.data.token);
+        }
 
         const resp = await axiosObj.get(`${HTTP_BACKEND}/room/${roomId}/messages`, {
+          headers,
           withCredentials: true,
         });
 
