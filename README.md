@@ -1,112 +1,46 @@
-# 🎨 Colab-Draw
+# 🎨 Colab-Draw | Real-time Collaborative Whiteboard
 
-A high-performance, real-time collaborative drawing application built for the modern web. 
+A high-performance, real-time collaborative drawing application that allows multiple users to draw together on an infinite canvas with sub-second synchronization.
 
-Colab-Draw allows multiple users to simultaneously join "Rooms" and draw together on an infinite digital canvas. The project solves complex concurrency and state-synchronization problems using a custom Event-Sourcing WebSocket architecture, ensuring that every user sees identical shapes and updates instantly at 60 FPS.
+**Live Demo:** [colab-draw-app-colab-draw-frontend.vercel.app](https://colab-draw-app-colab-draw-frontend.vercel.app/)
 
-## 📖 About This Project
+## Why This Project?
 
-Colab-Draw was conceptualized to bridge the gap between simple HTML5 canvas plugins and enterprise-grade whiteboard solutions like Miro or Excalidraw. 
+This project showcases my ability to solve complex real-time systems problems. It goes far beyond a simple canvas app — handling concurrency, state synchronization, performance optimization, and production-ready architecture.
 
-Building a truly real-time canvas introduces incredibly difficult computer science challenges, primarily **State Synchronization** and **Rendering Bottlenecks**. 
+## ✨ Key Features
+- Real-time multi-user drawing with custom WebSocket architecture
+- Event-sourced synchronization (new users can replay full drawing history)
+- High-performance rendering supporting thousands of vector shapes
+- Infinite zoomable canvas with smooth camera controls
+- Secure authentication with Google OAuth + JWT
+- Turborepo monorepo architecture (separate frontend, HTTP, and WebSocket services)
 
-Instead of traditional rendering methods where the entire canvas redrawing drops frames on every mouse move, Colab-Draw utilizes a React-Konva reconciliation layer fueled by a normalized O(1) Hash Map. Because of this, it can gracefully render thousands of vector shapes simultaneously without lagging. Furthermore, instead of simply saving the "final image", this application inherently respects the journey: utilizing an Event-Sourced append-only logging system over permanent WebSockets allows new users to elegantly "replay" the history of a room drawing stroke-by-stroke the exact moment they join.
+## 🏗️ Tech Stack & Architecture
+- **Frontend**: Next.js, React, React-Konva, Zustand, TailwindCSS
+- **Backend**: Node.js, Express
+- **Real-time**: Custom WebSocket server (`ws` library)
+- **Database**: PostgreSQL + Prisma ORM
+- **Monorepo**: Turborepo
+- **Auth**: Google OAuth + JWT
 
-## ✨ Features
-- **Real-Time Collaboration:** Powered by native WebSockets, broadcasting granular add/delete events to all clients instantly.
-- **Infinite Canvas Workspace:** Engineered using `react-konva` for a camera-based coordinate system allowing endless panning, zooming, and drawing.
-- **Event-Sourced Syncing:** Uses an append-only event log architecture meaning no data is lost and state interpolation is flawless.
-- **O(1) State Lookups:** Managed via Zustand using normalized Hash Maps, stripping away the performance bottlenecks of traditional array looping during massive multi-user drawing sessions.
-- **Premium Aesthetics:** Features a sleek dark-mode, glassmorphic UI built natively in Next.js.
-- **Google OAuth:** Secure cryptographic token authentication natively bridging cross-domain backend services.
-
-## 🏗️ Architecture Stack
-This application is architected as a highly scalable **Turborepo Monorepo**, segmenting the infrastructure into distinctly containerizable services:
-
-- **Frontend:** Next.js, React-Konva, Zustand, TailwindCSS
-- **HTTP Backend:** Node.js, Express, Google OAuth, JWT Authentication
-- **WebSocket Backend:** Node.js, `ws` library for persistent bi-directional data flow
-- **Database:** PostgreSQL (hosted on Neon), Prisma ORM
-
----
+**Core Technical Achievements:**
+- Event-sourced append-only log system for reliable state synchronization
+- Normalized O(1) hash maps + React-Konva optimizations for smooth rendering of thousands of shapes
+- Scalable architecture with separate services for HTTP and WebSocket layers
 
 ## 🚀 Running Locally
 
-Want to test the app on your own machine? Follow these exact steps to spin up the entire distributed system.
-
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v22 or higher)
-- [pnpm](https://pnpm.io/) (v9+)
-- A [PostgreSQL](https://neon.tech) Database
-- A [Google Cloud Console](https://console.cloud.google.com/) Project (for OAuth)
+- Node.js (v20+)
+- pnpm
+- PostgreSQL database
 
-### 1. Clone the Repository
+### Setup
 ```bash
 git clone https://github.com/tejaswi0905/colab-draw-app.git
 cd colab-draw-app
-```
-
-### 2. Install Dependencies
-Because this is a Turborepo, running `pnpm install` in the root directory will elegantly install the dependencies for all apps and packages simultaneously.
-```bash
 pnpm install
-```
-
-### 3. Environment Variables
-You need to create three `.env` files across the monorepo to tell the backends how to securely communicate. 
-
-Create a `.env` file inside `packages/db/`:
-```env
-DATABASE_URL="postgresql://your-postgres-string"
-```
-
-Create a `.env` file inside `apps/http-backend/`:
-```env
-DATABASE_URL="postgresql://your-postgres-string"
-JWT_SECRET="your-super-secret-key"
-GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-GOOGLE_REDIRECT_URI="http://localhost:3000/auth/google/callback"
-FRONTEND_URL="http://localhost:4000"
-```
-
-Create a `.env` file inside `apps/ws-backend/`:
-```env
-DATABASE_URL="postgresql://your-postgres-string"
-JWT_SECRET="your-super-secret-key" # MUST match the http-backend secret!
-```
-
-### 4. Database Initialization
-Push the Prisma Schema to your database to generate the exact tabular structures required:
-```bash
-cd packages/db
-npx prisma generate
-npx prisma db push
-cd ../../
-```
-
-### 5. Start the Engines!
-With a single Turbo command, you can ignite the frontend, the HTTP server, and the Websocket server concurrently:
-```bash
+Create .env files in the respective packages (see .env.example files).
 pnpm run dev
-```
-
-The application will successfully boot, and your frontend will be beautifully listening at: **`http://localhost:4000`**
-
----
-
-## 🤝 Contributing
-
-This project is fully open source and actively welcomes contributions from the community! Whether it's adding new vector tools, improving the WebSocket latency, or refining the UI, your PRs are highly appreciated.
-
-### How to Contribute:
-1. **Fork the repository** to your own GitHub account.
-2. **Create a new branch** for your feature or bug fix (`git checkout -b feature/amazing-new-tool`).
-3. **Commit your changes** with highly descriptive messages (`git commit -m 'Added complex bezier curve tool'`).
-4. **Push the branch** back to your fork (`git push origin feature/amazing-new-tool`).
-5. **Open a Pull Request** against the `main` branch of this repository.
-
-Please ensure that you run `pnpm run lint` and `pnpm run check-types` across the Turborepo before submitting a PR to keep the codebase universally type-safe!
-
----
-*If you are a recruiter looking at this repository, feel free to inspect `docs/ARCHITECTURE_GUIDE.md` for a master-class deep dive into the specific mathematical algorithms and architectural decisions used to power the real-time drawing engine.*
+The app will be available at http://localhost:4000
